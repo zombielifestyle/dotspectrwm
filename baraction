@@ -1,0 +1,21 @@
+#!/bin/bash
+
+while :
+do
+
+    BATCUR=`cat /proc/acpi/battery/BAT0/state | grep 'remaining capa' | awk '{ print $3 }'`
+    BATMAX=`cat /proc/acpi/battery/BAT0/info | grep 'last full capa' | awk '{ print $4 }'`
+    BAT=`echo "$BATCUR * 100 / $BATMAX" | bc`
+    echo -n "$BAT% Battery "
+    
+    SINK_NAME="alsa_output.pci-0000_00_14.2.analog-stereo"
+    VOL=`pacmd dump | grep -P "^set-sink-volume $SINK_NAME\s+" | perl -p -i -e 's/.+\s(.x.+)$/$1/'`
+    VOL=`printf '%d' $VOL`
+    VOL=`echo "$VOL * 100 / 65537" | bc` 
+    echo -n "/ $VOL% Volume"
+    
+    echo ""
+    sleep 10
+
+done
+
